@@ -14,8 +14,8 @@ authors = [
 ]
 keywords = ["mcp", "gradle", "java", "decompiler", "class-finder"]
 dependencies = [
-    "mcp",
-    "pydantic",
+    "mcp>=0.1.0",
+    "pydantic>=2.0",
     "typing-extensions",
     "python-dotenv"
 ]
