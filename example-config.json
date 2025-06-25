@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "gradle-class-finder": {
+      "command": "npx",
+      "args": ["gradle-class-finder"],
+      "env": {
+        "JAVA_HOME": "/path/to/java/home"
+      }
+    }
+  }
+}

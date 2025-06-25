@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "gradle-class-finder-mcp"
+version = "1.0.0"
+description = "MCP server for finding and decompiling classes in Gradle dependencies"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+authors = [
+    { name = "刘雄风" }
+]
+keywords = ["mcp", "gradle", "java", "decompiler", "class-finder"]
+dependencies = [
+    "mcp",
+    "pydantic",
+    "typing-extensions",
+    "python-dotenv"
+]
+
+[project.scripts]
+gradle-class-finder-mcp = "server:main"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/gradle-class-finder-mcp"
+Issues = "https://github.com/yourusername/gradle-class-finder-mcp/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]

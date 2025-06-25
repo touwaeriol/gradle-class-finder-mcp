@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "gradle-class-finder-local": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "/Users/erio/codes/mcps/gradle-class-finder-mcp",
+        "gradle-class-finder-mcp"
+      ],
+      "env": {
+        "JAVA_HOME": "/Library/Java/JavaVirtualMachines/jdk-11.jdk/Contents/Home"
+      }
+    }
+  }
+}
