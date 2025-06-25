@@ -2,6 +2,8 @@
 
 一个用于在 Gradle 项目依赖中查找类并提供反编译功能的 MCP 服务。
 
+📦 **仓库地址**: https://github.com/touwaeriol/gradle-class-finder-mcp
+
 ## 功能特性
 
 - 在 Gradle 项目的依赖库中查找指定的类
@@ -10,11 +12,25 @@
 - 支持获取部分源代码（指定行范围）
 - 提供源代码元信息（长度、方法列表等）
 
-## 使用方法
+## 安装和使用
 
-通过 nvx 启动：
+### 通过 uvx 直接使用（推荐）
 ```bash
-nvx gradle-class-finder
+# 从 GitHub 直接运行
+uvx --from git+https://github.com/touwaeriol/gradle-class-finder-mcp.git gradle-class-finder-mcp
+```
+
+### 在 Claude Desktop 中配置
+编辑 Claude Desktop 配置文件，添加：
+```json
+{
+  "mcpServers": {
+    "gradle-class-finder": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/touwaeriol/gradle-class-finder-mcp.git", "gradle-class-finder-mcp"]
+    }
+  }
+}
 ```
 
 ## MCP 方法

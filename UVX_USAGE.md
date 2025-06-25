@@ -4,7 +4,7 @@
 
 ```bash
 # 一次性运行
-uvx --from git+https://github.com/yourusername/gradle-class-finder-mcp.git gradle-class-finder-mcp
+uvx --from git+https://github.com/touwaeriol/gradle-class-finder-mcp.git gradle-class-finder-mcp
 
 # 或者使用简短命令
 uvx gradle-class-finder-mcp
@@ -95,7 +95,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 ### 问题：找不到包
 ```bash
 # 确保已发布到 PyPI 或使用 git URL
-uvx --from git+https://github.com/yourusername/gradle-class-finder-mcp.git gradle-class-finder-mcp
+uvx --from git+https://github.com/touwaeriol/gradle-class-finder-mcp.git gradle-class-finder-mcp
 ```
 
 ### 问题：Java 相关错误

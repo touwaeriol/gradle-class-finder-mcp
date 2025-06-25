@@ -24,8 +24,8 @@ dependencies = [
 gradle-class-finder-mcp = "server:main"
 
 [project.urls]
-Homepage = "https://github.com/yourusername/gradle-class-finder-mcp"
-Issues = "https://github.com/yourusername/gradle-class-finder-mcp/issues"
+Homepage = "https://github.com/touwaeriol/gradle-class-finder-mcp"
+Issues = "https://github.com/touwaeriol/gradle-class-finder-mcp/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["."]
