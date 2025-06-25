@@ -12,7 +12,7 @@ from typing import List, Dict, Optional, Tuple
 import asyncio
 import mcp
 from mcp.server import Server
-from mcp.types import TextContent, Tool, ToolResult, ToolSchema
+from mcp.types import TextContent, Tool, CallToolResult
 
 # 创建MCP服务器实例
 server = Server("gradle-class-finder")
@@ -194,9 +194,9 @@ async def list_tools() -> list[Tool]:
         Tool(
             name="find_class",
             description="在Gradle项目依赖中查找指定的类",
-            inputSchema=ToolSchema(
-                type="object",
-                properties={
+            inputSchema={
+                "type": "object",
+                "properties": {
                     "workspace_dir": {
                         "type": "string",
                         "description": "Gradle项目的根目录路径"
@@ -206,15 +206,15 @@ async def list_tools() -> list[Tool]:
                         "description": "要查找的类的全路径名，如: com.example.MyClass"
                     }
                 },
-                required=["workspace_dir", "class_name"]
-            )
+                "required": ["workspace_dir", "class_name"]
+            }
         ),
         Tool(
             name="get_source_code",
             description="获取类的反编译源代码",
-            inputSchema=ToolSchema(
-                type="object",
-                properties={
+            inputSchema={
+                "type": "object",
+                "properties": {
                     "jar_path": {
                         "type": "string",
                         "description": "JAR文件的完整路径"
@@ -232,15 +232,15 @@ async def list_tools() -> list[Tool]:
                         "description": "结束行号（可选）"
                     }
                 },
-                required=["jar_path", "class_name"]
-            )
+                "required": ["jar_path", "class_name"]
+            }
         ),
         Tool(
             name="get_source_metadata",
             description="获取类源代码的元信息",
-            inputSchema=ToolSchema(
-                type="object",
-                properties={
+            inputSchema={
+                "type": "object",
+                "properties": {
                     "jar_path": {
                         "type": "string",
                         "description": "JAR文件的完整路径"
@@ -250,13 +250,13 @@ async def list_tools() -> list[Tool]:
                         "description": "类的全路径名"
                     }
                 },
-                required=["jar_path", "class_name"]
-            )
+                "required": ["jar_path", "class_name"]
+            }
         )
     ]
 
 @server.call_tool()
-async def call_tool(name: str, arguments: dict) -> ToolResult:
+async def call_tool(name: str, arguments: dict) -> CallToolResult:
     try:
         if name == "find_class":
             results = finder.find_class_in_dependencies(
@@ -272,7 +272,7 @@ async def call_tool(name: str, arguments: dict) -> ToolResult:
             else:
                 content = f"Class {arguments['class_name']} not found in dependencies"
             
-            return ToolResult(content=[TextContent(text=content)])
+            return CallToolResult(content=[TextContent(text=content)])
         
         elif name == "get_source_code":
             source_code = finder.decompile_class(
@@ -282,7 +282,7 @@ async def call_tool(name: str, arguments: dict) -> ToolResult:
                 arguments.get("line_end")
             )
             
-            return ToolResult(content=[TextContent(text=source_code)])
+            return CallToolResult(content=[TextContent(text=source_code)])
         
         elif name == "get_source_metadata":
             metadata = finder.get_class_metadata(
@@ -291,16 +291,16 @@ async def call_tool(name: str, arguments: dict) -> ToolResult:
             )
             
             content = json.dumps(metadata, indent=2)
-            return ToolResult(content=[TextContent(text=content)])
+            return CallToolResult(content=[TextContent(text=content)])
         
         else:
-            return ToolResult(
+            return CallToolResult(
                 content=[TextContent(text=f"Unknown tool: {name}")],
                 isError=True
             )
     
     except Exception as e:
-        return ToolResult(
+        return CallToolResult(
             content=[TextContent(text=f"Error: {str(e)}")],
             isError=True
         )
