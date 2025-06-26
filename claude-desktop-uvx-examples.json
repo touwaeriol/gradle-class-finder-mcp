@@ -1,0 +1,47 @@
+{
+  "注释": "请选择适合你的配置方式，复制到 Claude Desktop 配置文件中",
+  
+  "本地开发_uvx方式": {
+    "mcpServers": {
+      "gradle-class-finder": {
+        "command": "uvx",
+        "args": [
+          "--from",
+          "/Users/erio/codes/mcps/gradle-class-finder-mcp",
+          "gradle-class-finder-mcp"
+        ]
+      }
+    }
+  },
+  
+  "本地开发_python直接运行": {
+    "mcpServers": {
+      "gradle-class-finder": {
+        "command": "python",
+        "args": ["/Users/erio/codes/mcps/gradle-class-finder-mcp/server.py"]
+      }
+    }
+  },
+  
+  "从GitHub安装": {
+    "mcpServers": {
+      "gradle-class-finder": {
+        "command": "uvx",
+        "args": [
+          "--from",
+          "git+https://github.com/touwaeriol/gradle-class-finder-mcp.git",
+          "gradle-class-finder-mcp"
+        ]
+      }
+    }
+  },
+  
+  "已发布到PyPI后": {
+    "mcpServers": {
+      "gradle-class-finder": {
+        "command": "uvx",
+        "args": ["gradle-class-finder-mcp"]
+      }
+    }
+  }
+}

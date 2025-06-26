@@ -19,10 +19,7 @@ uvx gradle-class-finder-mcp
   "mcpServers": {
     "gradle-class-finder": {
       "command": "uvx",
-      "args": ["gradle-class-finder-mcp"],
-      "env": {
-        "JAVA_HOME": "/Library/Java/JavaVirtualMachines/jdk-11.jdk/Contents/Home"
-      }
+      "args": ["gradle-class-finder-mcp"]
     }
   }
 }
@@ -46,10 +43,7 @@ uvx --from . gradle-class-finder-mcp
         "--from",
         "/Users/erio/codes/mcps/gradle-class-finder-mcp",
         "gradle-class-finder-mcp"
-      ],
-      "env": {
-        "JAVA_HOME": "/Library/Java/JavaVirtualMachines/jdk-11.jdk/Contents/Home"
-      }
+      ]
     }
   }
 }
@@ -65,12 +59,11 @@ uv tool install gradle-class-finder-mcp
 gradle-class-finder-mcp
 ```
 
-## 5. 带环境变量运行
+## 5. 特性说明
 
-```bash
-# 如果需要指定 Java 版本
-JAVA_HOME=/path/to/java uvx gradle-class-finder-mcp
-```
+- **自动下载 JRE**：首次运行时会自动下载合适的 Java 运行环境
+- **无需配置 JAVA_HOME**：完全自包含，不依赖系统 Java
+- **跨平台支持**：自动适配 Windows/macOS/Linux
 
 ## 配置文件位置
 
@@ -98,8 +91,9 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 uvx --from git+https://github.com/touwaeriol/gradle-class-finder-mcp.git gradle-class-finder-mcp
 ```
 
-### 问题：Java 相关错误
+### 问题：首次运行下载 JRE
 ```bash
-# 设置 JAVA_HOME
-export JAVA_HOME=$(/usr/libexec/java_home -v 11)
+# 首次运行会自动下载 JRE（约 40-50MB）
+# 下载完成后会保存在项目的 .java_runtime 目录
+# 后续运行会直接使用已下载的 JRE
 ```

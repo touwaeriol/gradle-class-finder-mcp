@@ -271,3 +271,9 @@ yarn-error.log*
 .env.*
 secrets/
 credentials/
+
+# Project specific
+.java_runtime/
+test_*.py
+test_*.sh
+claude-desktop-final-config.json
