@@ -277,3 +277,16 @@ credentials/
 test_*.py
 test_*.sh
 claude-desktop-final-config.json
+
+# Build outputs
+.gradle/
+build/
+
+# IDE files
+.idea/
+*.iml
+*.iws
+
+# Temporary files
+*.tmp
+*.bak

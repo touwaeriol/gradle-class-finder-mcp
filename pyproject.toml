@@ -14,12 +14,12 @@ authors = [
 ]
 keywords = ["mcp", "gradle", "java", "decompiler", "class-finder"]
 dependencies = [
-    "mcp",
-    "requests"
+    "mcp==1.1.2",
+    "requests>=2.25.0"
 ]
 
 [project.scripts]
-gradle-class-finder-mcp = "server:main"
+gradle-class-finder-mcp = "server:run"
 
 [project.urls]
 Homepage = "https://github.com/touwaeriol/gradle-class-finder-mcp"
@@ -27,3 +27,4 @@ Issues = "https://github.com/touwaeriol/gradle-class-finder-mcp/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["."]
+include = ["*.py"]

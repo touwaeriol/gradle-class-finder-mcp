@@ -1,0 +1,83 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group = 'com.opencare.mcp'
+version = '1.0.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
+    maven { url 'https://repo.spring.io/snapshot' }
+}
+
+dependencies {
+    // Gradle Tooling API - use ALL to get all Gradle dependencies
+    implementation gradleApi()
+    
+    // SLF4J for logging
+    implementation 'org.slf4j:slf4j-api:2.0.13'
+    implementation 'org.slf4j:slf4j-simple:2.0.13'
+    
+    // Gson for JSON handling
+    implementation 'com.google.code.gson:gson:2.10.1'
+    
+    // CFR decompiler - using version available in Maven Central
+    implementation 'org.benf:cfr:0.152'
+    
+    // Spring MCP (仅用于测试)
+    testImplementation 'org.springframework.experimental:mcp:0.6.0'
+    
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+}
+
+application {
+    mainClass = 'com.open_care.ClassFinder'
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'com.open_care.ClassFinder',
+            'Class-Path': configurations.runtimeClasspath.collect { it.getName() }.join(' ')
+        )
+    }
+    
+    // Create a fat JAR
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// Configure shadowJar
+shadowJar {
+    archiveFileName = 'gradle-class-finder-helper.jar'
+    manifest {
+        attributes 'Main-Class': 'com.open_care.ClassFinder'
+    }
+}
+
+// Copy dependencies to lib directory for Python script
+task copyDependencies(type: Copy) {
+    from configurations.runtimeClasspath
+    into 'build/dependencies'
+}
+
+build.dependsOn shadowJar
+build.dependsOn copyDependencies
+
+// Clean task
+clean {
+    delete 'build'
+    delete '.java_runtime'
+}
