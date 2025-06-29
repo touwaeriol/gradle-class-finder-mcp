@@ -107,9 +107,20 @@ public class ClassFinder {
             }
 
             // Use IdeaProject model for more reliable dependency and source information
+            // IMPORTANT: Only process dependencies for the CURRENT module/submodule, not parent modules
             IdeaProject ideaProject = connection.getModel(IdeaProject.class);
+            String targetModulePath = targetProject.getPath();
+            
+            System.err.println("[INFO] Target module path: " + targetModulePath);
+            
             for (IdeaModule module : ideaProject.getModules()) {
-                if (module.getGradleProject().getPath().equals(targetProject.getPath())) {
+                String modulePath = module.getGradleProject().getPath();
+                System.err.println("[DEBUG] Checking module: " + modulePath);
+                
+                // STRICT: Only process the exact target module, not parent or child modules
+                if (modulePath.equals(targetModulePath)) {
+                    System.err.println("[INFO] Processing dependencies for target module: " + modulePath);
+                    
                     for (IdeaDependency dependency : module.getDependencies()) {
                         if (dependency instanceof IdeaSingleEntryLibraryDependency) {
                             IdeaSingleEntryLibraryDependency libDependency = (IdeaSingleEntryLibraryDependency) dependency;
@@ -129,11 +140,14 @@ public class ClassFinder {
                                         match.sourceJarPath = sourceFile.getAbsolutePath();
                                     }
                                     results.add(match);
+                                    System.err.println("[INFO] Found in dependency: " + file.getName());
                                 }
                             }
                         }
                     }
-                    break; // Found the target module
+                    break; // Found and processed the target module
+                } else {
+                    System.err.println("[DEBUG] Skipping module: " + modulePath + " (not target)");
                 }
             }
             
@@ -193,37 +207,41 @@ public class ClassFinder {
     
     private static void checkFlatDirDependencies(File projectDir, String className, String originalClassName, List<MatchResult> results) {
         try {
-            // Check build.gradle for flatDir configurations
+            System.err.println("[INFO] Checking flatDir dependencies ONLY for current module: " + projectDir.getAbsolutePath());
+            
+            // STRICT: Only check build.gradle in the CURRENT module, NOT parent modules
             File buildGradle = new File(projectDir, "build.gradle");
             if (!buildGradle.exists()) {
-                buildGradle = new File(projectDir.getParentFile(), "build.gradle");
+                // Also try build.gradle.kts for Kotlin DSL
+                buildGradle = new File(projectDir, "build.gradle.kts");
             }
             
+            List<String> flatDirs = new ArrayList<>();
+            
             if (buildGradle.exists()) {
-                List<String> flatDirs = parseFlatDirs(buildGradle);
+                flatDirs.addAll(parseFlatDirs(buildGradle));
+            }
+            
+            // Also check common directories, but ONLY relative to current module
+            flatDirs.add("libs");
+            flatDirs.add("lib");
+            
+            // IMPORTANT: Only check directories relative to CURRENT module, not parent
+            for (String dir : flatDirs) {
+                File flatDirPath;
+                if (dir.startsWith("/")) {
+                    // Absolute path
+                    flatDirPath = new File(dir);
+                } else {
+                    // Relative path - ONLY relative to current module directory
+                    flatDirPath = new File(projectDir, dir);
+                }
                 
-                // Also check common directories
-                flatDirs.add(".annotated-libs");
-                flatDirs.add("libs");
-                flatDirs.add("lib");
-                
-                for (String dir : flatDirs) {
-                    File flatDirPath;
-                    if (dir.startsWith("/") || dir.startsWith("${")) {
-                        // Absolute path or variable
-                        if (dir.contains("${rootProject.projectDir")) {
-                            dir = dir.replace("${rootProject.projectDir.path}", projectDir.getParentFile().getAbsolutePath());
-                            dir = dir.replace("${rootProject.projectDir}", projectDir.getParentFile().getAbsolutePath());
-                        }
-                        flatDirPath = new File(dir);
-                    } else {
-                        // Relative path
-                        flatDirPath = new File(projectDir.getParentFile(), dir);
-                    }
-                    
-                    if (flatDirPath.exists() && flatDirPath.isDirectory()) {
-                        checkDirectoryForJars(flatDirPath, className, originalClassName, results);
-                    }
+                if (flatDirPath.exists() && flatDirPath.isDirectory()) {
+                    System.err.println("[INFO] Checking flatDir: " + flatDirPath.getAbsolutePath());
+                    checkDirectoryForJars(flatDirPath, className, originalClassName, results);
+                } else {
+                    System.err.println("[DEBUG] FlatDir not found: " + flatDirPath.getAbsolutePath());
                 }
             }
         } catch (Exception e) {
@@ -235,7 +253,7 @@ public class ClassFinder {
         List<String> dirs = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(buildGradle))) {
             String line;
-            Pattern flatDirPattern = Pattern.compile("flatDir.*dirs:\\s*[\"']([^\"']+)[\"']");
+            Pattern flatDirPattern = Pattern.compile("flatDir.*dirs:\\s*[\"']([^\"']*)[\"']");
             Pattern flatDirPattern2 = Pattern.compile("flatDir.*dirs:\\s*\\[([^\\]]+)\\]");
             
             while ((line = reader.readLine()) != null) {
