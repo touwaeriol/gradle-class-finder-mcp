@@ -1,16 +1,12 @@
-package com.open_care;
+package com.opencare.mcp.service;
 
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
-import org.gradle.tooling.model.build.BuildEnvironment;
 import org.gradle.tooling.model.GradleProject;
 import org.gradle.tooling.model.idea.IdeaProject;
 import org.gradle.tooling.model.idea.IdeaModule;
 import org.gradle.tooling.model.idea.IdeaDependency;
 import org.gradle.tooling.model.idea.IdeaSingleEntryLibraryDependency;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,32 +20,13 @@ import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ClassFinder {
-
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final String CFR_JAR_PATH = "lib/cfr-0.152.jar";
-
-    public static void main(String[] args) {
-        if (args.length < 2) {
-            System.err.println("Usage: java -jar helper.jar <projectPath> <className> [submodulePath]");
-            System.exit(1);
-        }
-
-        String projectPath = args[0];
-        String originalClassName = args[1];
-        String submodulePath = args.length > 2 ? args[2] : null;
-
-        try {
-            List<MatchResult> results = findClassInProject(projectPath, originalClassName, submodulePath);
-            System.out.println(GSON.toJson(results));
-        } catch (Exception e) {
-            System.err.println("Error finding class: " + e.getMessage());
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
+/**
+ * 类查找服务
+ * 提供在Gradle项目依赖中查找Java类的功能
+ */
+public class ClassFinderService {
     
-    public static List<MatchResult> findClassInProject(String projectPath, String originalClassName, String submodulePath) {
+    public List<MatchResult> findClassInProject(String projectPath, String originalClassName, String submodulePath) {
         String className = originalClassName.replace('.', '/') + ".class"; // Convert to internal class name
         List<MatchResult> results = new ArrayList<>();
 
@@ -72,8 +49,7 @@ public class ClassFinder {
                     }
                 }
                 if (!foundSubmodule) {
-                    System.err.println("Submodule not found: " + submodulePath);
-                    System.exit(1);
+                    throw new RuntimeException("子模块未找到: " + submodulePath);
                 }
             }
 
@@ -102,7 +78,7 @@ public class ClassFinder {
                     localMatch.dependencyCoordinates = "LOCAL::" + (submodulePath != null ? submodulePath : projectDir.getName());
                     localMatch.isLocal = true;
                     results.add(localMatch);
-                    System.err.println("[INFO] Found local class: " + localSource.getAbsolutePath());
+                    System.err.println("[INFO] 找到本地类: " + localSource.getAbsolutePath());
                 }
             }
 
@@ -111,15 +87,15 @@ public class ClassFinder {
             IdeaProject ideaProject = connection.getModel(IdeaProject.class);
             String targetModulePath = targetProject.getPath();
             
-            System.err.println("[INFO] Target module path: " + targetModulePath);
+            System.err.println("[INFO] 目标模块路径: " + targetModulePath);
             
             for (IdeaModule module : ideaProject.getModules()) {
                 String modulePath = module.getGradleProject().getPath();
-                System.err.println("[DEBUG] Checking module: " + modulePath);
+                System.err.println("[DEBUG] 检查模块: " + modulePath);
                 
                 // STRICT: Only process the exact target module, not parent or child modules
                 if (modulePath.equals(targetModulePath)) {
-                    System.err.println("[INFO] Processing dependencies for target module: " + modulePath);
+                    System.err.println("[INFO] 处理目标模块的依赖: " + modulePath);
                     
                     for (IdeaDependency dependency : module.getDependencies()) {
                         if (dependency instanceof IdeaSingleEntryLibraryDependency) {
@@ -140,14 +116,14 @@ public class ClassFinder {
                                         match.sourceJarPath = sourceFile.getAbsolutePath();
                                     }
                                     results.add(match);
-                                    System.err.println("[INFO] Found in dependency: " + file.getName());
+                                    System.err.println("[INFO] 在依赖中找到: " + file.getName());
                                 }
                             }
                         }
                     }
                     break; // Found and processed the target module
                 } else {
-                    System.err.println("[DEBUG] Skipping module: " + modulePath + " (not target)");
+                    System.err.println("[DEBUG] 跳过模块: " + modulePath + " (非目标模块)");
                 }
             }
             
@@ -155,7 +131,7 @@ public class ClassFinder {
             checkFlatDirDependencies(projectDir, className, originalClassName, results);
 
         } catch (Exception e) {
-            throw new RuntimeException("Error connecting to Gradle or processing project: " + e.getMessage(), e);
+            throw new RuntimeException("连接Gradle或处理项目时出错: " + e.getMessage(), e);
         } finally {
             if (connection != null) {
                 connection.close();
@@ -165,7 +141,7 @@ public class ClassFinder {
         return results;
     }
 
-    private static boolean containsClass(File jarFile, String className) {
+    private boolean containsClass(File jarFile, String className) {
         try (JarFile jar = new JarFile(jarFile)) {
             Enumeration<JarEntry> entries = jar.entries();
             while (entries.hasMoreElements()) {
@@ -188,7 +164,7 @@ public class ClassFinder {
         public boolean isLocal = false;
     }
     
-    private static String extractDependencyCoordinates(File jarFile) {
+    private String extractDependencyCoordinates(File jarFile) {
         // Try to extract Maven coordinates from the file path
         // Example: /Users/xxx/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot/3.3.6/xxx/spring-boot-3.3.6.jar
         String path = jarFile.getAbsolutePath();
@@ -205,9 +181,9 @@ public class ClassFinder {
         return jarFile.getName();
     }
     
-    private static void checkFlatDirDependencies(File projectDir, String className, String originalClassName, List<MatchResult> results) {
+    private void checkFlatDirDependencies(File projectDir, String className, String originalClassName, List<MatchResult> results) {
         try {
-            System.err.println("[INFO] Checking flatDir dependencies ONLY for current module: " + projectDir.getAbsolutePath());
+            System.err.println("[INFO] 检查当前模块的flatDir依赖: " + projectDir.getAbsolutePath());
             
             // STRICT: Only check build.gradle in the CURRENT module, NOT parent modules
             File buildGradle = new File(projectDir, "build.gradle");
@@ -238,18 +214,18 @@ public class ClassFinder {
                 }
                 
                 if (flatDirPath.exists() && flatDirPath.isDirectory()) {
-                    System.err.println("[INFO] Checking flatDir: " + flatDirPath.getAbsolutePath());
+                    System.err.println("[INFO] 检查flatDir: " + flatDirPath.getAbsolutePath());
                     checkDirectoryForJars(flatDirPath, className, originalClassName, results);
                 } else {
-                    System.err.println("[DEBUG] FlatDir not found: " + flatDirPath.getAbsolutePath());
+                    System.err.println("[DEBUG] FlatDir未找到: " + flatDirPath.getAbsolutePath());
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error checking flatDir dependencies: " + e.getMessage());
+            System.err.println("检查flatDir依赖时出错: " + e.getMessage());
         }
     }
 
-    private static List<String> parseFlatDirs(File buildGradle) {
+    private List<String> parseFlatDirs(File buildGradle) {
         List<String> dirs = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(buildGradle))) {
             String line;
@@ -271,12 +247,12 @@ public class ClassFinder {
                 }
             }
         } catch (IOException e) {
-            System.err.println("Error reading build.gradle: " + e.getMessage());
+            System.err.println("读取build.gradle时出错: " + e.getMessage());
         }
         return dirs;
     }
 
-    private static void checkDirectoryForJars(File directory, String className, String originalClassName, List<MatchResult> results) {
+    private void checkDirectoryForJars(File directory, String className, String originalClassName, List<MatchResult> results) {
         try {
             File[] jarFiles = directory.listFiles((dir, name) -> name.endsWith(".jar"));
             if (jarFiles != null) {
@@ -297,41 +273,7 @@ public class ClassFinder {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error checking directory " + directory + ": " + e.getMessage());
-        }
-    }
-    
-    public static String decompileClass(String jarPath, String className, Integer lineStart, Integer lineEnd) {
-        try {
-            // Use CFR to decompile the class
-            ProcessBuilder pb = new ProcessBuilder(
-                "java", "-jar", CFR_JAR_PATH, jarPath, className
-            );
-            
-            Process process = pb.start();
-            
-            // Read the output
-            StringBuilder output = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new java.io.InputStreamReader(process.getInputStream()))) {
-                String line;
-                int lineNumber = 0;
-                while ((line = reader.readLine()) != null) {
-                    lineNumber++;
-                    if ((lineStart == null || lineNumber >= lineStart) && 
-                        (lineEnd == null || lineNumber <= lineEnd)) {
-                        output.append(line).append("\n");
-                    }
-                }
-            }
-            
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                throw new RuntimeException("CFR decompilation failed with exit code: " + exitCode);
-            }
-            
-            return output.toString();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to decompile class: " + e.getMessage(), e);
+            System.err.println("检查目录时出错 " + directory + ": " + e.getMessage());
         }
     }
 }
