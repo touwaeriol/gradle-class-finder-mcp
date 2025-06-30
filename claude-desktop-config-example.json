@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "gradle-class-finder": {
+      "command": "java",
+      "args": [
+        "-jar",
+        "/path/to/gradle-class-finder-mcp/build/libs/gradle-class-finder-mcp.jar"
+      ],
+      "env": {
+        "JAVA_HOME": "/path/to/java17",
+        "PATH": "/path/to/java17/bin:${PATH}"
+      }
+    }
+  }
+}

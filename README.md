@@ -13,8 +13,14 @@
 
 ## 要求
 
-- Java 17+
-- Gradle项目
+### MCP服务器运行环境
+- **Java 17+** （必需）- 用于运行MCP服务器本身
+- 由于使用官方MCP Java SDK，最低要求Java 17
+
+### 目标项目兼容性  
+- **Gradle 2.0+** - 几乎所有现代Gradle项目
+- **任意JDK版本** - 目标项目可以使用Java 8, 11, 17, 21等任意版本
+- **项目类型** - Java, Kotlin, Android, Spring Boot等所有Gradle项目
 
 ## 构建和安装
 
@@ -26,17 +32,28 @@
 
 ### 运行服务器
 
+#### 方式1: 直接运行JAR
 ```bash
 java -jar build/libs/gradle-class-finder-mcp.jar
 ```
 
+#### 方式2: 使用启动脚本
+```bash
+# macOS/Linux
+./run.sh
+
+# Windows  
+run.bat
+```
+
 ## Claude Desktop配置
 
-将以下配置添加到Claude Desktop配置文件：
+### 配置文件位置
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **Linux**: `~/.config/Claude/claude_desktop_config.json`
 
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-
+### 基本配置
 ```json
 {
   "mcpServers": {
@@ -44,12 +61,40 @@ java -jar build/libs/gradle-class-finder-mcp.jar
       "command": "java",
       "args": [
         "-jar",
-        "/path/to/gradle-class-finder-mcp/build/libs/gradle-class-finder-mcp.jar"
+        "/绝对路径/gradle-class-finder-mcp/build/libs/gradle-class-finder-mcp.jar"
       ]
     }
   }
 }
 ```
+
+### 使用启动脚本（推荐）
+```json
+{
+  "mcpServers": {
+    "gradle-class-finder": {
+      "command": "/绝对路径/gradle-class-finder-mcp/run.sh"
+    }
+  }
+}
+```
+
+### 指定Java版本（如果系统默认不是Java 17+）
+```json
+{
+  "mcpServers": {
+    "gradle-class-finder": {
+      "command": "/usr/lib/jvm/java-17-openjdk/bin/java",
+      "args": [
+        "-jar",
+        "/绝对路径/gradle-class-finder-mcp/build/libs/gradle-class-finder-mcp.jar"
+      ]
+    }
+  }
+}
+```
+
+📝 **更多配置示例**: 参见 [claude-desktop-config-examples.md](claude-desktop-config-examples.md)
 
 ## 可用工具
 
